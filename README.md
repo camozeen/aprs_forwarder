@@ -56,3 +56,30 @@ and thus requires `netcat`, `sox`, and `multimon-ng` to be installed on the base
 
 * python3
 * conda (optional)
+* flask (optional - needed to run integration scripts in `test`)
+* gnuradio (optional - needed to run integration scripts in `test`)
+
+# Testing
+
+Note: the python dependencies above.
+
+Open gnuradio-companion and set the file path in the `File Source` block to point to `integration_test_data.bin` in the test directory.
+
+start the example webserver in a new terminal.
+
+```
+cd test
+FLASK_APP=integration_test_server.py FLASK_ENV=development flask run
+```
+
+start the service
+
+```
+python main.py
+```
+
+run the grc flowgraph
+
+
+
+
