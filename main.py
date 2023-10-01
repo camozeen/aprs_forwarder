@@ -6,13 +6,16 @@ import queue
 import requests
 import time
 
+
 MAIN_DESCRIPTION = """
 Forwards APRS messages from a source UDP connection on localhost to a
 specified HTTP webserver.
 """
 
+
 worker_q_in = queue.Queue()
 worker_q_out = queue.Queue()
+
 
 def make_worker(args):
     uri = f'{args.http_protocol}://{args.http_host}:{args.http_port}{args.http_resource}'
@@ -31,6 +34,7 @@ def make_worker(args):
 
             worker_q_in.task_done()
     return worker
+
 
 def listen(args):
     p = subprocess.Popen(
@@ -66,6 +70,7 @@ def listen(args):
 
     worker_q_in.join()
 
+
 def main():
     parser = argparse.ArgumentParser(description=MAIN_DESCRIPTION)
     parser.add_argument('--udp-port', type=int, help='source UDP port (default: 7355)', default=7355)
@@ -74,7 +79,6 @@ def main():
     parser.add_argument('--http-port', type=int, help='destination HTTP port (default: 5000)', default=5000)
     parser.add_argument('--http-resource', type=str, help='destination HTTP resource path (default: /)', default='/')
     parser.add_argument('--retry-limit', type=int, help='number of messages to retry before shutdown (default: 50)', default=50)
-    # TODO: add max re-queue size
     args = parser.parse_args()
 
     threading.Thread(target=make_worker(args), daemon=True).start()
