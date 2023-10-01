@@ -37,6 +37,8 @@ def make_worker(args):
 
 
 def listen(args):
+    # TODO: add support for SDR sources
+    # e.g. rtl_fm -f 144390000 -s 22050 | multimon-ng --timestamp -t raw -a AFSK1200 -A -
     p = subprocess.Popen(
         f"""
         nc -l -u -p {args.udp_port} \
