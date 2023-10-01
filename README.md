@@ -26,15 +26,15 @@ http://127.0.0.1:5000/
 
 with the following body (content-type: json):
 
-```json
+```js
 {
-  # APRS message string
-  # e.g. "APRS: TEST>WORLD:Hello, APRS"
-  "data": "<APRS message: string>",
+  // APRS message with type string
+  // e.g. "APRS: TEST>WORLD:Hello, APRS"
+  "data": "...",
 
-  # python style epoch float
-  # e.g. 1696160551.3251953
-  "ts": <epoch: float>
+  // python style epoch with type float
+  // e.g. 1696160551.3251953
+  "ts": 0000000000.0000000
 }
 ```
 
