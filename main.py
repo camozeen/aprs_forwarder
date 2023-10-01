@@ -81,8 +81,13 @@ def main():
     parser.add_argument('--retry-limit', type=int, help='number of messages to retry before shutdown (default: 50)', default=50)
     args = parser.parse_args()
 
+    print('INFO: starting worker thread')
+    print(f'    | destination: {args.http_protocol}://{args.http_host}:{args.http_port}{args.http_resource}')
     threading.Thread(target=make_worker(args), daemon=True).start()
+    print('INFO: starting main thread')
+    print(f'    | listen UDP: {args.udp_port}')
     listen(args)
+    print('INFO: shutting down')
 
 
 if __name__ == "__main__":
