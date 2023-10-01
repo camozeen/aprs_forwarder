@@ -22,9 +22,7 @@ def make_worker(args):
             response = None
 
             try:
-                response = requests.post(f'{uri}', json={
-                    'item': item
-                })
+                response = requests.post(f'{uri}', json=item)
             except:
                 pass
 
@@ -35,14 +33,12 @@ def make_worker(args):
     return worker
 
 def listen(args):
-    command = f"""
-    nc -l -u -p {args.udp_port} \
-    | sox -t raw -esigned-integer -b 16 -r 48000 - -esigned-integer -b 16 -r 22050 -t raw - \
-    | multimon-ng --timestamp -t raw -a AFSK1200 -A -
-    """
-
     p = subprocess.Popen(
-        command,
+        f"""
+        nc -l -u -p {args.udp_port} \
+        | sox -t raw -esigned-integer -b 16 -r 48000 - -esigned-integer -b 16 -r 22050 -t raw - \
+        | multimon-ng --timestamp -t raw -a AFSK1200 -A -
+        """,
         stdout=subprocess.PIPE,
         shell=True
     )
