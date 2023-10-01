@@ -41,7 +41,7 @@ def listen(args):
         f"""
         nc -l -u -p {args.udp_port} \
         | sox -t raw -esigned-integer -b 16 -r 48000 - -esigned-integer -b 16 -r 22050 -t raw - \
-        | multimon-ng --timestamp -t raw -a AFSK1200 -A -
+        | multimon-ng -t raw -a AFSK1200 -A -
         """,
         stdout=subprocess.PIPE,
         shell=True
