@@ -4,6 +4,7 @@ import sys
 import threading
 import queue
 import requests
+import time
 
 MAIN_DESCRIPTION = """
 Forwards APRS messages from a source UDP connection on localhost to a
@@ -53,7 +54,10 @@ def listen(args):
             status = worker_q_out.get_nowait()
             if status == 'FAIL':
                 break;
-        worker_q_in.put(line.decode(sys.stdout.encoding))
+        worker_q_in.put({
+            'data': line.decode(sys.stdout.encoding),
+            'ts': time.time()
+        })
 
     worker_q_in.join()
 
