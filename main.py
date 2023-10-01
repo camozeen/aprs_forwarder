@@ -29,7 +29,7 @@ def make_worker(args):
                 pass
 
             if response is None or response.status_code != 200:
-                worker_q_out.put('FAIL')
+                worker_q_out.put(item)
 
             worker_q_in.task_done()
     return worker
@@ -49,11 +49,20 @@ def listen(args):
 
     for line in iter(p.stdout.readline, ""):
         if not worker_q_out.empty():
-            # TODO: simple failure mechanism implemented here. in future, we will requeue
-            # failed requests and break the loop completly if queue size exceeds some theshold
-            status = worker_q_out.get_nowait()
-            if status == 'FAIL':
+            if worker_q_out.qsize() >= args.retry_limit:
+                print(f'CRITICAL: failure queue is full. shutting down.')
                 break;
+
+            failed_item_count = worker_q_out.qsize()
+            if failed_item_count == (args.retry_limit * 0.5):
+                print(f'WARNING: failure queue is 50% full - items: {failed_item_count}.')
+
+            failed_item_i = 0
+            while failed_item_i < failed_item_count:
+                failed_item = worker_q_out.get_nowait()
+                worker_q_in.put(failed_item)
+                failed_item_i += 1
+
         worker_q_in.put({
             'data': line.decode(sys.stdout.encoding),
             'ts': time.time()
@@ -68,6 +77,7 @@ def main():
     parser.add_argument('--http-host', type=str, help='destination HTTP host (default: 127.0.0.1)', default='127.0.0.1')
     parser.add_argument('--http-port', type=int, help='destination HTTP port (default: 5000)', default=5000)
     parser.add_argument('--http-resource', type=str, help='destination HTTP resource path (default: /)', default='/')
+    parser.add_argument('--retry-limit', type=int, help='number of messages to retry before shutdown (default: 50)', default=50)
     # TODO: add max re-queue size
     args = parser.parse_args()
 
