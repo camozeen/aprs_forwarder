@@ -7,4 +7,4 @@ else
   conda_env=" -n $1 "
 fi
 
-eval "conda run --live-stream${conda_env}python main.py"
+eval "conda run --live-stream${conda_env}python main.py --use-rtl"

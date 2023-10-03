@@ -35,17 +35,21 @@ def make_worker(args):
             worker_q_in.task_done()
     return worker
 
+
 def get_subprocess(args):
     if args.use_rtl:
+        print('INFO: using RTL-SDR as source')
         return f"""
-        rtl_fm -f {args.rtl_channel} -s 22050 | multimon-ng --timestamp -t raw -a AFSK1200 -A -
+        rtl_fm -f {args.rtl_channel} -s 22050 | multimon-ng -t raw -a AFSK1200 -A -
         """
 
+    print('INFO: using UDP as source')
     return f"""
     nc -l -u -p {args.udp_port} \
     | sox -t raw -esigned-integer -b 16 -r 48000 - -esigned-integer -b 16 -r 22050 -t raw - \
     | multimon-ng -t raw -a AFSK1200 -A -
     """
+
 
 def listen(args):
     command = get_subprocess(args)
@@ -96,7 +100,6 @@ def main():
     print(f'    | destination: {args.http_protocol}://{args.http_host}:{args.http_port}{args.http_resource}')
     threading.Thread(target=make_worker(args), daemon=True).start()
     print('INFO: starting main thread')
-    print(f'    | listen UDP: {args.udp_port}')
     listen(args)
     print('INFO: shutting down')
 
