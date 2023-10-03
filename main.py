@@ -35,16 +35,23 @@ def make_worker(args):
             worker_q_in.task_done()
     return worker
 
+def get_subprocess(args):
+    if args.use_rtl:
+        return f"""
+        rtl_fm -f {args.rtl_channel} -s 22050 | multimon-ng --timestamp -t raw -a AFSK1200 -A -
+        """
+
+    return f"""
+    nc -l -u -p {args.udp_port} \
+    | sox -t raw -esigned-integer -b 16 -r 48000 - -esigned-integer -b 16 -r 22050 -t raw - \
+    | multimon-ng -t raw -a AFSK1200 -A -
+    """
 
 def listen(args):
-    # TODO: add support for SDR sources
-    # e.g. rtl_fm -f 144390000 -s 22050 | multimon-ng --timestamp -t raw -a AFSK1200 -A -
+    command = get_subprocess(args)
+
     p = subprocess.Popen(
-        f"""
-        nc -l -u -p {args.udp_port} \
-        | sox -t raw -esigned-integer -b 16 -r 48000 - -esigned-integer -b 16 -r 22050 -t raw - \
-        | multimon-ng -t raw -a AFSK1200 -A -
-        """,
+        command,
         stdout=subprocess.PIPE,
         shell=True
     )
@@ -81,6 +88,8 @@ def main():
     parser.add_argument('--http-port', type=int, help='destination HTTP port (default: 5000)', default=5000)
     parser.add_argument('--http-resource', type=str, help='destination HTTP resource path (default: /)', default='/')
     parser.add_argument('--retry-limit', type=int, help='number of messages to retry before shutdown (default: 50)', default=50)
+    parser.add_argument('--use-rtl', action='store_true', help='use rtl dongle directly instead of default UDP connection (default: False)')
+    parser.add_argument('--rtl-channel', type=int, help='the frequency in Hz if using rtl dongle (defaults to APRS US frequency 144390000 Hz)', default=144390000)
     args = parser.parse_args()
 
     print('INFO: starting worker thread')
